@@ -1,0 +1,665 @@
+/* ヨーロッパ・パステル調デザインシステム */
+
+:root {
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Montserrat', sans-serif;
+    
+    /* カラーパレット（ヨーロッパの街並みやくすんだパステルカラー） */
+    --color-bg-ivory: #F5F2EB;     /* 温かみのあるアンティークアイボリー */
+    --color-bg-sage: #E2ECE4;      /* くすんだセージグリーン */
+    --color-text-dark: #3E3835;    /* 焦げ茶に近いチャコール */
+    --color-text-muted: #7D7571;   /* 温かみのあるグレーブラウン */
+    
+    --color-gold: #C2A675;         /* アンティークゴールド（アクセント） */
+    --color-gold-light: #E8DDCA;
+    
+    --color-easy: #BAC8B9;         /* フレンチセージ（EASY） */
+    --color-easy-dark: #A5B6A4;
+    --color-medium: #E8D3B4;       /* フレンチイエロー（MEDIUM） */
+    --color-medium-dark: #D4BD9C;
+    --color-hard: #E0BBAE;         /* ダスティローズ（HARD） */
+    --color-hard-dark: #CCA092;
+    
+    --color-white: #FFFFFF;
+    
+    /* シャドウと境界線 */
+    --shadow-classic: 0 10px 30px rgba(62, 56, 53, 0.06);
+    --shadow-card-hover: 0 15px 35px rgba(194, 166, 117, 0.2);
+    --border-gold-thin: 1px solid rgba(194, 166, 117, 0.4);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-ivory);
+    color: var(--color-text-dark);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ヨーロッパ風の緩やかな光の揺らぎ */
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 0;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.bg-glow-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--color-bg-sage) 0%, rgba(226, 236, 228, 0) 70%);
+    top: -100px;
+    left: -100px;
+    animation: floatGlow1 25s infinite alternate ease-in-out;
+}
+
+.bg-glow-2 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, #EADBC8 0%, rgba(234, 219, 200, 0) 70%);
+    bottom: -150px;
+    right: -100px;
+    animation: floatGlow2 30s infinite alternate ease-in-out;
+}
+
+@keyframes floatGlow1 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(60px, 80px) scale(1.1); }
+}
+
+@keyframes floatGlow2 {
+    0% { transform: translate(0, 0) scale(1.1); }
+    100% { transform: translate(-80px, -60px) scale(0.9); }
+}
+
+/* アプリ全体コンテナ */
+.app-container {
+    width: 100%;
+    max-width: 1000px;
+    min-height: 100vh;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* 画面切り替え */
+.screen {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.screen.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 1. Start Screen Style */
+.game-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.game-header h1 {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    font-style: italic;
+}
+
+.game-header .subtitle {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
+}
+
+.level-selection {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    padding: 40px 30px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-classic);
+    border: var(--border-gold-thin);
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+}
+
+.level-selection h2 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--color-text-dark);
+    margin-bottom: 28px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+}
+
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ボタン（英語） */
+.btn {
+    border: none;
+    border-radius: 12px;
+    padding: 16px 24px;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.btn-title {
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.btn-desc {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    opacity: 0.8;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+/* 各難易度ボタンのくすみパステルカラー */
+.btn-easy {
+    background-color: var(--color-easy);
+    color: #3E4A3E;
+}
+.btn-easy:hover {
+    background-color: var(--color-easy-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(186, 200, 185, 0.4);
+}
+
+.btn-medium {
+    background-color: var(--color-medium);
+    color: #5A4C3A;
+}
+.btn-medium:hover {
+    background-color: var(--color-medium-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(232, 211, 180, 0.4);
+}
+
+.btn-hard {
+    background-color: var(--color-hard);
+    color: #5A4038;
+}
+.btn-hard:hover {
+    background-color: var(--color-hard-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(224, 187, 174, 0.4);
+}
+
+.start-footer {
+    margin-top: 36px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-serif);
+    font-style: italic;
+}
+
+/* 2. Game HUD */
+.game-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(15px);
+    padding: 12px 28px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-classic);
+    border: var(--border-gold-thin);
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-text-dark);
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    gap: 4px;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+    color: var(--color-gold);
+    transform: scale(1.05);
+}
+
+.hud-stats {
+    display: flex;
+    gap: 40px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-label {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-family: var(--font-sans);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+}
+
+/* Game Board */
+.game-board-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.game-board {
+    display: grid;
+    gap: 16px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    perspective: 1200px;
+}
+
+.game-board.grid-easy {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+}
+
+.game-board.grid-medium {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+}
+
+.game-board.grid-hard {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Card Styling (ヨーロッパの絵葉書風) */
+.card {
+    aspect-ratio: 5 / 7;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transform-style: preserve-3d;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+}
+
+.card-inner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+    border-radius: 12px;
+}
+
+.card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* Safari用 */
+    border-radius: 12px;
+    box-shadow: var(--shadow-classic);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: var(--color-white);
+    border: 1px solid rgba(194, 166, 117, 0.25);
+    padding: 6px; /* 画像周囲に白いフチを作る */
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+/* インナーゴールドフレーム（絵葉書のようなディテール） */
+.card-face::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    border: 1px solid rgba(194, 166, 117, 0.3);
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* カード画像 */
+.card-face img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 画像の比率を保ったままカバー */
+    border-radius: 8px;
+}
+
+/* 裏面 (CARD.png) */
+.card-back {
+    background-color: #FAF6F0;
+    z-index: 2;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 表面 (ユーザー画像) */
+.card-front {
+    transform: rotateY(180deg);
+    background-color: var(--color-white);
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* めくり状態、または一致した状態での前後関係と可視性の切り替え */
+.card.flipped .card-back,
+.card.matched .card-back {
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.card.flipped .card-front,
+.card.matched .card-front {
+    z-index: 2;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Matched Card Animation */
+.card.matched {
+    pointer-events: none;
+}
+
+.card.matched .card-inner {
+    transform: rotateY(180deg);
+    animation: matchSuccess 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes matchSuccess {
+    0% { transform: rotateY(180deg) scale(1); }
+    50% { 
+        transform: rotateY(180deg) scale(1.05);
+        box-shadow: 0 0 20px rgba(194, 166, 117, 0.6);
+    }
+    100% { 
+        transform: rotateY(180deg) scale(1); 
+    }
+}
+
+/* Mismatched Card Animation */
+.card.mismatched .card-inner {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotateY(180deg) translateX(0); }
+    20%, 60% { transform: rotateY(180deg) translateX(-8px); }
+    40%, 80% { transform: rotateY(180deg) translateX(8px); }
+}
+
+/* 3. Modal Clear View */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(62, 56, 53, 0.3);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: var(--color-white);
+    padding: 48px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 460px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(62, 56, 53, 0.15);
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    border: var(--border-gold-thin);
+    position: relative;
+}
+
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    border: 1px solid rgba(194, 166, 117, 0.4);
+    border-radius: 14px;
+    pointer-events: none;
+}
+
+.modal.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-icon {
+    font-size: 3rem;
+    color: var(--color-gold);
+    margin-bottom: 20px;
+}
+
+.modal-content h2 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+    margin-bottom: 8px;
+}
+
+.modal-message {
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    margin-bottom: 32px;
+}
+
+.result-stats {
+    background-color: #FAF9F6;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+    border: var(--border-gold-thin);
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-label {
+    font-family: var(--font-serif);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.result-value {
+    font-family: var(--font-sans);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+}
+
+.new-best-badge {
+    background-color: var(--color-easy);
+    color: #3E4A3E;
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 6px 16px;
+    border-radius: 8px;
+    display: none;
+    align-self: center;
+    margin-top: 8px;
+    animation: popBadge 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popBadge {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-primary {
+    background-color: var(--color-gold);
+    color: var(--color-white);
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: #B29562;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(194, 166, 117, 0.3);
+}
+
+.btn-secondary {
+    background-color: var(--color-white);
+    color: var(--color-text-dark);
+    border: 1px solid rgba(194, 166, 117, 0.3);
+    width: 100%;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-bg-ivory);
+    transform: translateY(-2px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .game-header h1 {
+        font-size: 2.8rem;
+    }
+    
+    .level-selection {
+        padding: 30px 20px;
+    }
+    
+    .hud-stats {
+        gap: 20px;
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .game-board {
+        gap: 10px;
+    }
+    
+    .game-board.grid-hard {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .modal-content {
+        padding: 32px 24px;
+    }
+}
