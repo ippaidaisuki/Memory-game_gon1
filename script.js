@@ -125,15 +125,23 @@ function setupDeck(level) {
     const config = LEVEL_CONFIG[level];
     const pairsCount = config.pairs;
     
-    // 使用するカード画像番号のリストを作成 (1〜12)
-    // 難易度に応じて必要なペア数分を用意
-    let cardImages = [];
-    for (let i = 1; i <= pairsCount; i++) {
-        cardImages.push(i);
-        cardImages.push(i); // ペアにするため2枚ずつ追加
-    }
+    // 準備された20枚の全画像番号（1〜20）のリストを作成
+    const allImages = Array.from({ length: 20 }, (_, i) => i + 1);
     
-    // シャッフル
+    // 20枚の画像リストを一度シャッフル
+    shuffle(allImages);
+    
+    // シャッフルされた中から、今回のゲームに必要なペア数分（Easyなら6つ）の画像番号を抽出
+    const selectedImages = allImages.slice(0, pairsCount);
+    
+    // 抽出した画像を2枚ずつペアにして配置用配列を作成
+    let cardImages = [];
+    selectedImages.forEach(imgNum => {
+        cardImages.push(imgNum);
+        cardImages.push(imgNum); // ペアにするため2枚ずつ追加
+    });
+    
+    // 配置用配列をさらにシャッフルしてランダムに並べる
     shuffle(cardImages);
     
     // ボードのクリア
